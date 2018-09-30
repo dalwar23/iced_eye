@@ -6,7 +6,6 @@ from __future__ import print_function
 # Import python libraries
 import os
 import sys
-import datetime
 from pyrainbowterm import *
 
 # Source code meta data
