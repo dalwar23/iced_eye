@@ -62,7 +62,7 @@ def generate_indexhtml():
     This function generates a merged file called index.html from
     given templates and sequence
 
-    :return: <>
+    :return: (obj) file object
     """
     # Check file existance and permissions
     currently_available_files = check_template_files()
