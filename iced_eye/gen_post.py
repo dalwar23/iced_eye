@@ -7,21 +7,25 @@ from __future__ import print_function
 import os
 import sys
 import io
-from pyrainbowterm import *
+from wasabi import Printer
+
+# Create message wrapper
+msg = Printer()
+
 try:
     from bs4 import BeautifulSoup
 except ImportError as e:
-    print('Can not import BeautifulSoup', log_type='error', color='red')
+    msg.fail("Can not import BeautifulSoup")
 
 # Source code meta data
-__author__ = 'Dalwar Hossain'
-__email__ = 'dalwar.hossain@protonmail.com'
+__author__ = "Dalwar Hossain"
+__email__ = "dalwar.hossain@protonmail.com"
 
 # Templates directory
-templates_dir = '../templates'
+templates_dir = "../templates"
 
 # Posts directory
-posts_dir = '../posts'
+posts_dir = "../posts"
 
 # Latest 'number_of_post_to_show' post to show
 number_of_post_to_show = 4
@@ -29,11 +33,13 @@ number_of_post_to_show = 4
 
 # Set default encoding
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding("utf8")
 
 
 # Template of the blog
-def create_html_post(post_title=None, post_date=None, post_category=None, post_body=None):
+def create_html_post(
+    post_title=None, post_date=None, post_category=None, post_body=None
+):
     """
     This function contains the template of the posts structure
     """
@@ -47,8 +53,9 @@ def create_html_post(post_title=None, post_date=None, post_category=None, post_b
                                 </div>
                             </li>"""
 
-    html_blog_doc_post = html_blog_doc_post.format(ptitle=post_title, pdate=post_date,
-                                                   category=post_category, post=post_body)
+    html_blog_doc_post = html_blog_doc_post.format(
+        ptitle=post_title, pdate=post_date, category=post_category, post=post_body
+    )
     # return
     return html_blog_doc_post
 
@@ -59,33 +66,40 @@ def string_posts(latest_posts=None):
     This function reads the posts and creats the posts section in html
     """
     # Define variable
-    post_string = ''
+    post_string = ""
 
     # Read the posts
     for item in latest_posts:
         # Read post
-        print('Reading post [{}].....'.format(item), log_type='info')
+        msg.info("Reading post [{}].....".format(item))
         html_post_file = os.path.join(posts_dir, item)
-        with io.open(html_post_file, 'r', encoding='utf8') as post:
+        with io.open(html_post_file, "r", encoding="utf8") as post:
             html_post = post.read()
-        
+
         # Create a Beautifulsoup object to parse the html
-        print('Parsing HTML.....', log_type='info')
-        soup = BeautifulSoup(html_post, 'html.parser')
+        msg.info("Parsing HTML.....")
+        soup = BeautifulSoup(html_post, "html.parser")
         ptitle = str(soup.ptitle.string)  # <Ptitle> tag contains the title of the post
-        post_body_elements = soup.select('post  p')  # <post> tag holds the main body of the post
+        post_body_elements = soup.select(
+            "post  p"
+        )  # <post> tag holds the main body of the post
         # Join all the paragraph's of the post body
-        post = '\n'.join(str(item) for item in post_body_elements)
-        category = str(soup.category.string)  # <category> tag contains the post category
-        pdate = str(soup.pdate.string)  # <pdate> tag is the date and time the post was written
-  
+        post = "\n".join(str(item) for item in post_body_elements)
+        category = str(
+            soup.category.string
+        )  # <category> tag contains the post category
+        pdate = str(
+            soup.pdate.string
+        )  # <pdate> tag is the date and time the post was written
+
         # Create the posts
-        print('Creating post entry for [{}].....'.format(item), log_type='info')
-        ret_post = create_html_post(post_title=ptitle, post_date=pdate, post_category=category,
-                                    post_body=post)
+        msg.info("Creating post entry for [{}].....".format(item))
+        ret_post = create_html_post(
+            post_title=ptitle, post_date=pdate, post_category=category, post_body=post
+        )
         post_string += str(ret_post)
-        post_string += '\n'
-    
+        post_string += "\n"
+
     # Return
     return post_string
 
@@ -97,9 +111,9 @@ def check_post_files():
 
     :return: (list) A python list of files present in posts directory
     """
-    
+
     # Check for files
-    print('Checking file permissions for posts.....', log_type='info')
+    msg.info("Checking file permissions for posts.....")
     file_list = os.listdir(posts_dir)
 
     # Check file permissions
@@ -108,14 +122,12 @@ def check_post_files():
         if os.access(current_file, os.F_OK):
             # print('{} file found!'.format(current_file), log_type='info')
             if os.access(current_file, os.R_OK):
-                print('{} ............... '.format(item), log_type='info', end='')
-                print('OK', color='green')
+                msg.info("{} ............... ".format(item))
             else:
-                print('{} ............... ', log_type='error', end='')
-                print('NOT OK', color='red')
+                msg.info("{} ............... ".format(item))
                 sys.exit(1)
         else:
-            print('Can not access files!', log_type='error', color='red')
+            msg.fail("Can not access files!")
             sys.exit(1)
     # Return
     return file_list
@@ -135,29 +147,31 @@ def generate_post():
         n = number_of_post_to_show
     else:
         n = len(post_file_list)
-    print('Selecting [{}] most recent posts.....'.format(n), log_type='info')
+    msg.info("Selecting [{}] most recent posts.....".format(n))
     latest_posts = sorted(post_file_list, reverse=True)[:n]
 
     # Generate post section
     posts = string_posts(latest_posts=latest_posts)
 
     # Now read the pre_blog template and create blog.html
-    input_file = os.path.join(templates_dir, 'pre_blog.html')
-    output_file = os.path.join(templates_dir, 'blog.html')
-    
+    input_file = os.path.join(templates_dir, "pre_blog.html")
+    output_file = os.path.join(templates_dir, "blog.html")
+
     # Read input tamplate and create blog.html file
-    print('Creating blog.html file.....', log_type='info')
-    replace_dict = {'_posts_': posts}
-    with io.open(input_file, 'r', encoding='utf8') as infile, io.open(output_file, 'w', encoding='utf8') as outfile:
+    msg.info("Creating blog.html file.....")
+    replace_dict = {"_posts_": posts}
+    with io.open(input_file, "r", encoding="utf8") as infile, io.open(
+        output_file, "w", encoding="utf8"
+    ) as outfile:
         for line in infile:
-            for source, target in replace_dict.iteritems():
+            for source, target in replace_dict.items():
                 line = line.replace(source, target)
             outfile.write(line)
-    
+
     # HTML file creation complete
-    print('HTML file creation complete!', log_type='info')
+    msg.info("HTML file creation complete!")
 
 
 # Boiler plate to run this program
-if __name__ == '__main__':
+if __name__ == "__main__":
     generate_post()

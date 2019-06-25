@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # Source code meta data
-__author__ = 'Dalwar Hossain'
-__email__ = 'dalwar.hossain@protonmail.com'
+__author__ = "Dalwar Hossain"
+__email__ = "dalwar.hossain@protonmail.com"
 
 # Version
-__version__ = '1.0'
-__release__ = '1.0'
+__version__ = "1.0"
+__release__ = "1.0"
